@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">MediaSocial</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="followers">Followers</string>
+    <string name="following">Following</string>
+    <string name="posts">Posts</string>
+    <string name="title_activity_replacer">ReplacerActivity</string>
+    <!-- Strings used for fragments for navigation -->
+
+</resources>
