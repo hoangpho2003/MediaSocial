@@ -46,14 +46,14 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.HomeHolder> {
         holder.timeTv.setText(""+list.get(position).getTimestamp());
 
         List<String> likeList = list.get(position).getLikes();
-        int count = likeList.size();
-        if (count == 0){
-            holder.likeCountTv.setVisibility(View.INVISIBLE);
-        }else if(count == 1){
-            holder.likeCountTv.setText(count + " like");
-        }else{
-            holder.likeCountTv.setText(count + " likes");
-        }
+//        int count = likeList.size();
+//        if (count == 0){
+//            holder.likeCountTv.setVisibility(View.INVISIBLE);
+//        }else if(count == 1){
+//            holder.likeCountTv.setText(count + " like");
+//        }else{
+//            holder.likeCountTv.setText(count + " likes");
+//        }
         holder.descriptionTv.setText(list.get(position).getDescription());
         Random random = new Random();
         int color = Color.argb(255, random.nextInt(256), random.nextInt(256), random.nextInt(256));

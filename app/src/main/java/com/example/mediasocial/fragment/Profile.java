@@ -132,11 +132,15 @@ public class Profile extends Fragment {
                     followerCountTv.setText(follower+"");
                     toolbarNameTv.setText(name);
 
-                    Glide.with(getContext().getApplicationContext())
-                            .load(proflieURL)
-                            .placeholder(R.drawable.ic_person)
-                            .timeout(6500)
-                            .into(profileImage);
+                    try {
+                        Glide.with(getContext().getApplicationContext())
+                                .load(proflieURL)
+                                .placeholder(R.drawable.ic_person)
+                                .timeout(6500)
+                                .into(profileImage);
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    };
                 }
             }
         });
