@@ -23,6 +23,9 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserHolder> {
 
     private List<Users> list;
     FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+    OnUserClicked onUserClicked;
+
     public UserAdapter(List<Users> list) {
         this.list = list;
     }
@@ -37,10 +40,10 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserHolder> {
     @Override
     public void onBindViewHolder(@NonNull UserHolder holder, int position) {
 
-        if(list.get(position).getUid().equals(user.getUid())){
+        if (list.get(position).getUid().equals(user.getUid())) {
             holder.relativeLayout.setVisibility(View.GONE);
             holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
-        }else{
+        } else {
             holder.relativeLayout.setVisibility(View.VISIBLE);
         }
         holder.nameTV.setText(list.get(position).getName());
@@ -52,6 +55,12 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserHolder> {
                 .timeout(6500)
                 .into(holder.profileImage);
 
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onUserClicked.onClicked(list.get(position).getUid());
+            }
+        });
     }
 
     @Override
@@ -59,7 +68,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserHolder> {
         return list.size();
     }
 
-    static class UserHolder extends RecyclerView.ViewHolder{
+    static class UserHolder extends RecyclerView.ViewHolder {
 
         private CircleImageView profileImage;
         private TextView nameTV, statusTV;
@@ -72,5 +81,13 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserHolder> {
             statusTV = itemView.findViewById(R.id.statusTV);
             relativeLayout = itemView.findViewById(R.id.relativeLayout);
         }
+    }
+
+    public void OnUserClicked(OnUserClicked onUserClicked) {
+        this.onUserClicked = onUserClicked;
+    }
+
+    public interface OnUserClicked {
+        void onClicked(String uid);
     }
 }

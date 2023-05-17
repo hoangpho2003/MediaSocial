@@ -1,15 +1,20 @@
 package com.example.mediasocial.fragment;
 
+import android.content.Context;
 import android.os.Bundle;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
+
 import com.example.mediasocial.Model.Users;
 import com.example.mediasocial.R;
 import com.example.mediasocial.adapter.UserAdapter;
@@ -33,6 +38,18 @@ public class Search extends Fragment {
     UserAdapter adapter;
     private List<Users> list;
     CollectionReference reference;
+    OnDataPass onDataPass;
+
+    public interface OnDataPass {
+        void onChange(String uid);
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+
+        onDataPass = (OnDataPass) context;
+    }
 
     public Search() {
         // Required empty public constructor
@@ -53,21 +70,32 @@ public class Search extends Fragment {
         reference = FirebaseFirestore.getInstance().collection("Users");
         loadUserData();
         searchUser();
+        clickListener();
+    }
+
+    private void clickListener() {
+        adapter.OnUserClicked(new UserAdapter.OnUserClicked() {
+            @Override
+            public void onClicked(String uid) {
+                onDataPass.onChange(uid);
+            }
+        });
     }
 
     private void searchUser() {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                reference.orderBy("search").startAt(query).endAt(query + "\uf8ff")
+                reference.orderBy("name").startAt(query).endAt(query + "\uf8ff")
                         .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                             @Override
                             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                 if (task.isSuccessful()) {
                                     list.clear();
                                     for (DocumentSnapshot snapshot : task.getResult()) {
-                                        if (!snapshot.exists())
-                                            return;
+                                        if (!snapshot.exists()){
+                                            Toast.makeText(getContext(), "Khong co nguoi dung!", Toast.LENGTH_SHORT).show();
+                                            return;}
                                         Users users = snapshot.toObject(Users.class);
                                         list.add(users);
                                     }
@@ -75,6 +103,7 @@ public class Search extends Fragment {
                                 }
                             }
                         });
+                Toast.makeText(getContext(), "Khong co nguoi dung!", Toast.LENGTH_SHORT).show();
                 return false;
             }
 
@@ -91,15 +120,16 @@ public class Search extends Fragment {
         reference.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                if(error != null){
+                if (error != null) {
                     return;
                 }
 
-                if(value == null){
+                if (value == null) {
+                    Toast.makeText(getContext(), "Khong co nguoi dung!", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 list.clear();
-                for (QueryDocumentSnapshot snapshot: value){
+                for (QueryDocumentSnapshot snapshot : value) {
                     Users users = snapshot.toObject(Users.class);
                     list.add(users);
                 }

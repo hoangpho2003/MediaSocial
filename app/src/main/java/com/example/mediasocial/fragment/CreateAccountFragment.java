@@ -1,6 +1,7 @@
 package com.example.mediasocial.fragment;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -27,7 +28,9 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -116,51 +119,50 @@ public class CreateAccountFragment extends Fragment {
                 progressBar.setVisibility(View.VISIBLE);
 
                 createAccount(name, email, password);
-
-
             }
         });
     }
 
     private void createAccount(final String name, final String email, String password) {
         auth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            FirebaseUser user = auth.getCurrentUser();
-                            UserProfileChangeRequest.Builder request = new UserProfileChangeRequest.Builder();
-                            request.setDisplayName(name);
-                            user.updateProfile(request.build());
-                            user.sendEmailVerification()
-                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<Void> task) {
-                                            if (task.isSuccessful()) {
-                                                Toast.makeText(getContext(), "Email verification link send", Toast.LENGTH_SHORT).show();
-                                            }
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        FirebaseUser user = auth.getCurrentUser();
+                        String image = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRwp--EwtYaxkfsSPIpoSPucdbxAo6PancQX1gw6ETSKI6_pGNCZY4ts1N6BV5ZcN3wPbA&usqp=CAU";
+                        UserProfileChangeRequest.Builder request = new UserProfileChangeRequest.Builder();
+                        request.setDisplayName(name);
+                        request.setPhotoUri(Uri.parse(image));
+                        user.updateProfile(request.build());
+                        user.sendEmailVerification()
+                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        if (task.isSuccessful()) {
+                                            Toast.makeText(getContext(), "Email verification link send", Toast.LENGTH_SHORT).show();
                                         }
-                                    });
-                            uploadUser(user, name, email);
-                        } else {
-                            progressBar.setVisibility(View.GONE);
-                            String exception = task.getException().getMessage();
-                            Toast.makeText(getContext(), "Error: " + exception, Toast.LENGTH_SHORT).show();
-                        }
+                                    }
+                                });
+                        uploadUser(user, name, email);
+                    } else {
+                        progressBar.setVisibility(View.GONE);
+                        String exception = task.getException().getMessage();
+                        Toast.makeText(getContext(), "Error: " + exception, Toast.LENGTH_SHORT).show();
                     }
                 });
     }
 
     private void uploadUser(FirebaseUser user, String name, String email) {
+        List<String> list = new ArrayList<>();
+        List<String> list1 = new ArrayList<>();
         Map<String, Object> map = new HashMap<>();
         map.put("name", name);
         map.put("email", email);
         map.put("profileImage", " ");
         map.put("uid", user.getUid());
-        map.put("following", 0);
-        map.put("followers", 0);
         map.put("status", " ");
         map.put("search", name.toLowerCase());
+        map.put("followers", list);
+        map.put("following", list1);
 
         FirebaseFirestore.getInstance().collection("Users").document(user.getUid())
                 .set(map)

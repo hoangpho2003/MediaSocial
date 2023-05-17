@@ -27,7 +27,6 @@ public class HomeModel {
         this.profileImage = profileImage;
         this.imageUrl = imageUrl;
         this.uid = uid;
-
         this.description = description;
         this.id = id;
         this.timestamp = timestamp;

@@ -15,12 +15,14 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.bumptech.glide.Glide;
 import com.example.mediasocial.Model.GalleryImages;
 import com.example.mediasocial.R;
@@ -39,7 +41,11 @@ import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
+
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -47,7 +53,7 @@ import java.util.Map;
 
 public class Add extends Fragment {
 
-    Uri imageUri;
+    Uri imageUri, uri;
     Dialog dialog;
     private EditText descET;
     private ImageView imageView;
@@ -56,6 +62,8 @@ public class Add extends Fragment {
     private List<GalleryImages> list;
     private GalleryAdapter adapter;
     private FirebaseUser user;
+    public static final int PICK_IMAGE = 1;
+    Boolean checked = false, checked1 = false;
 
     public Add() {
         // Required empty public constructor
@@ -78,8 +86,33 @@ public class Add extends Fragment {
         list = new ArrayList<>();
         adapter = new GalleryAdapter(list);
         recyclerView.setAdapter(adapter);
-        clickListener();
+//        File file = new File(Environment.getExternalStorageDirectory().toString() + "/Download");
+//        if (!file.exists()){
+//            File[] files = file.listFiles();
+//            assert files != null;
+//            list.clear();
+//            for (File file1 : files) {
+//                if (file1.getAbsolutePath().endsWith(".jpg") || file1.getAbsolutePath().endsWith(".png")) {
+//                    list.add(new GalleryImages(Uri.fromFile(file1)));
+//                    adapter.notifyDataSetChanged();
+//                }
+//            }
+//        }else{
+//            Intent intent = new Intent();
+//            intent.setType("image/*");
+//            intent.setAction(Intent.ACTION_GET_CONTENT);
+//            startActivityForResult(intent, PICK_IMAGE);
+//            adapter.notifyDataSetChanged();
+//        }
 
+//        if (checked1) {
+//            Intent intent = new Intent();
+//            intent.setType("image/*");
+//            intent.setAction(Intent.ACTION_GET_CONTENT);
+//            startActivityForResult(intent, PICK_IMAGE);
+//            adapter.notifyDataSetChanged();
+//        }
+        clickListener();
     }
 
     private void clickListener() {
@@ -93,20 +126,31 @@ public class Add extends Fragment {
             FirebaseStorage storage = FirebaseStorage.getInstance();
             final StorageReference storageReference = storage.getReference().child("Post Images/" + System.currentTimeMillis());
             dialog.show();
-            storageReference.putFile(imageUri)
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            storageReference.getDownloadUrl().addOnSuccessListener(uri -> uploadData(uri.toString()));
-                        } else {
-                            dialog.dismiss();
-                            Toast.makeText(getContext(), "Failed to upload post", Toast.LENGTH_SHORT).show();
-                        }
-                    });
+            if (checked) {
+                storageReference.putFile(uri)
+                        .addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+                                storageReference.getDownloadUrl().addOnSuccessListener(uri -> uploadData(uri.toString()));
+                            } else {
+                                dialog.dismiss();
+                                Toast.makeText(getContext(), "Failed to upload post", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+            } else {
+                storageReference.putFile(imageUri)
+                        .addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+                                storageReference.getDownloadUrl().addOnSuccessListener(uri -> uploadData(uri.toString()));
+                            } else {
+                                dialog.dismiss();
+                                Toast.makeText(getContext(), "Failed to upload post", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+            }
         });
     }
 
     private void uploadData(String imageURL) {
-
         CollectionReference reference = FirebaseFirestore.getInstance().collection("Users")
                 .document(user.getUid()).collection("Post Images");
         String id = reference.document().getId();
@@ -210,6 +254,14 @@ public class Add extends Fragment {
                 nextBtn.setVisibility(View.VISIBLE);
                 recyclerView.setVisibility(View.GONE);
             }
+        } else if (requestCode == PICK_IMAGE) {
+            uri = data.getData();
+            Glide.with(getContext())
+                    .load(uri)
+                    .into(imageView);
+            imageView.setVisibility(View.VISIBLE);
+            nextBtn.setVisibility(View.VISIBLE);
+            recyclerView.setVisibility(View.GONE);
         }
     }
 }
